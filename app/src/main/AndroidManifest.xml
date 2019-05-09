@@ -24,12 +24,16 @@
         <receiver
                 android:name=".AlertReceiver"
                 android:enabled="true"
-                android:exported="true" />
+                android:exported="true" >
+            <intent-filter>
+                <action android:name="fauzi.hilmy.timerapp.TRIGGER_DIALOG" />
+            </intent-filter>
+        </receiver>
 
-        <service
-                android:name=".AlertService"
-                android:exported="true"
-                android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <!--<service-->
+                <!--android:name=".AlertService"-->
+                <!--android:exported="true"-->
+                <!--android:permission="android.permission.BIND_JOB_SERVICE"/>-->
 
     </application>
 

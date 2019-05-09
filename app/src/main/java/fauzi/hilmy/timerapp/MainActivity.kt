@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -59,18 +60,20 @@ class MainActivity : AppCompatActivity() {
 
         button_reset.setOnClickListener { resetTimer() }
 //        setRelease()
+
     }
 
-    private fun setRelease() {
-        if (isFinish == true) {
+    private fun setRelease(timeLeft: Long) {
+//        if (isFinish == true) {
             val intent = Intent(this@MainActivity, AlertReceiver::class.java)
+            intent.action = "fauzi.hilmy.timerapp.TRIGGER_DIALOG"
             val pendingIntent =
-                PendingIntent.getBroadcast(this@MainActivity, 0, intent, 0)
+                    PendingIntent.getBroadcast(this@MainActivity, 0, intent, 0)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent)
+            alarmManager.set(AlarmManager.RTC_WAKEUP, timeLeft, pendingIntent)
 
-            isFinish = false
-        }
+//            isFinish = false
+//        }
     }
 
     private fun setTime(milliseconds: Long) {
@@ -82,12 +85,13 @@ class MainActivity : AppCompatActivity() {
     private fun startTimer() {
         mEndTime = System.currentTimeMillis() + mTimeLeftInMillis
 
-        val timeLeft = mTimeLeftInMillis.toInt()
-        val intent = Intent(this@MainActivity, AlertReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(this@MainActivity, 0, intent, 0)
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + timeLeft, pendingIntent)
+        setRelease(mEndTime)
+//        val timeLeft = mTimeLeftInMillis.toInt()
+//        val intent = Intent(this@MainActivity, AlertReceiver::class.java)
+//        val pendingIntent =
+//            PendingIntent.getBroadcast(this@MainActivity, 0, intent, 0)
+//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + timeLeft, pendingIntent)
 
         mCountDownTimer = object : CountDownTimer(mTimeLeftInMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -140,13 +144,13 @@ class MainActivity : AppCompatActivity() {
         val timeLeftFormatted: String
         if (hours > 0) {
             timeLeftFormatted = String.format(
-                Locale.getDefault(),
-                "%d:%02d:%02d", hours, minutes, seconds
+                    Locale.getDefault(),
+                    "%d:%02d:%02d", hours, minutes, seconds
             )
         } else {
             timeLeftFormatted = String.format(
-                Locale.getDefault(),
-                "%02d:%02d", minutes, seconds
+                    Locale.getDefault(),
+                    "%02d:%02d", minutes, seconds
             )
         }
 
@@ -202,10 +206,13 @@ class MainActivity : AppCompatActivity() {
         if (mCountDownTimer != null) {
             mCountDownTimer!!.cancel()
         }
+
+//        setRelease()
     }
 
     override fun onResume() {
         super.onResume()
+        registerReceiver(AlertReceiver(), IntentFilter("fauzi.hilmy.timerapp.TRIGGER_DIALOG"))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             openOverlaySettings()
         }
@@ -214,8 +221,8 @@ class MainActivity : AppCompatActivity() {
     @TargetApi(Build.VERSION_CODES.M)
     private fun openOverlaySettings() {
         val intent = Intent(
-            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:$packageName")
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
         )
         try {
             startActivityForResult(intent, 12)
